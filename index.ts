@@ -1,26 +1,148 @@
 //
 
 import * as Promise from "bluebird"
+import { exec } from "child_process"
+import { readdirSync, statSync } from "fs"
 
-export function checkSpaceInDir(options: { dir: string, extension?: string, verbose?: boolean }) {
+function getPercentSpace(dir: string) {
+    return new Promise((resolve, reject) => {
+
+        exec("df -h " + dir + " | grep '/'", (err, stdout, stderr) => {
+            if (err) {
+                reject(err)
+            } else {
+
+                const reout = []
+                for (let i = 0; i < stdout.split(" ").length; i++) {
+                    if (stdout.split(" ")[i]) reout.push(stdout.split(" ")[i].replace('\n', ''))
+                }
+
+
+
+
+                resolve(reout[4].replace('%', ''))
+
+
+            }
+
+        })
+
+    })
+
+}
+
+
+
+function removeLastFileFromDir(dir: string) {
+    return new Promise((resolve, reject) => {
+
+
+        const files = readdirSync(dir);
+        files.sort(function (a, b) {
+            return statSync(dir + "/" + a).mtime.getTime() -
+                statSync(dir + "/" + b).mtime.getTime();
+        });
+
+
+        exec("rm " + files[0], (err, stdout, stderr) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(true)
+            }
+
+        })
+
+    })
+
+}
+
+function remfiles(dir: string) {
+    return new Promise((resolve, reject) => {
+
+        function recursiveremfiles(dir: string) {
+
+            getPercentSpace(dir).then((percent) => {
+
+
+                if (percent > 90) {
+
+                    removeLastFileFromDir(dir).then(() => {
+
+                        recursiveremfiles(dir)
+
+                    }).catch((err) => {
+                        reject(err)
+                    })
+
+                } else {
+                    resolve(true)
+                }
+
+
+
+            }).catch((err) => {
+                reject(err)
+            })
+
+        }
+    })
+
+
+}
+
+export function checkSpaceInDir(dir: string, options?: { extension?: string, verbose?: boolean }) {
 
     return new Promise((resolve, reject) => {
 
 
-        if (!options) {
+        if (!dir) {
 
-            if (options.verbose) console.error("No dir provided")
+            if (options && options.verbose) console.error("No dir provided")
 
             reject("No dir provided")
 
         } else {
 
-            if (options.verbose) console.log("checking disk")
+            if (options && options.verbose) console.log("checking disk")
 
 
-            // check partition in which there is that folder
-            // check partition free space
+
+
             // remove files (based on extension if extension is provided), by modified time
+
+
+            getPercentSpace(dir).then((percent) => {
+
+
+                if (percent > 90) {
+
+
+
+
+                    remfiles(dir).then((a) => {
+
+                        if (options && options.verbose) console.log("space cleaned")
+                        resolve(a)
+
+                    }).catch((err) => {
+                        if (options && options.verbose) console.error(err)
+
+
+                        reject(err)
+                    })
+
+
+
+                } else {
+                    if (options && options.verbose) console.log("disk checked")
+                    resolve("disk ok, nothing to do")
+                }
+
+
+            }).catch((err) => {
+                reject(err)
+            })
 
 
 
@@ -67,7 +189,7 @@ export class recursivecheckSpaceInDir {
         const that = this
         return new Promise((resolve, reject) => {
 
-            checkSpaceInDir({ dir: that.dir, extension: that.extension, verbose: that.verbose }).then((a) => {
+            checkSpaceInDir(that.dir, { extension: that.extension, verbose: that.verbose }).then((a) => {
                 if (that.verbose) console.log("disk check ok")
                 resolve(a)
             }).then((err) => {
