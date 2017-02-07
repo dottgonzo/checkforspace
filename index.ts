@@ -53,17 +53,13 @@ function removeLastFileFromDir(dir: string) {
 
         if (files.length > 1) {
 
-
-
-
-
             files.sort(function (a, b) {
                 return statSync(dir + "/" + a).mtime.getTime() -
                     statSync(dir + "/" + b).mtime.getTime();
             });
 
 
-            exec("rm " + files[0], (err, stdout, stderr) => {
+            exec("rm '" + dir + "/" + files[0]+"'", (err, stdout, stderr) => {
                 if (err) {
                     reject(err)
                 } else {
@@ -88,7 +84,7 @@ function remfiles(dir: string) {
             getPercentSpace(dir).then((percent) => {
 
 
-                if (percent > 90) {
+                if (percent > 10) {
 
                     removeLastFileFromDir(dir).then(() => {
 
@@ -109,6 +105,7 @@ function remfiles(dir: string) {
             })
 
         }
+        recursiveremfiles(dir)
     })
 
 
@@ -138,7 +135,7 @@ export function checkSpaceInDir(dir: string, options?: { extension?: string, ver
             getPercentSpace(dir).then((percent) => {
 
 
-                if (percent > 90) {
+                if (percent > 10) {
 
                     remfiles(dir).then((a) => {
 
