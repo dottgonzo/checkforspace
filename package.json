@@ -34,5 +34,8 @@
     "gulp-util": "^3.0.8",
     "mocha": "^3.2.0",
     "typescript": "^2.1.5"
+  },
+  "dependencies": {
+    "bluebird": "^3.4.7"
   }
 }
