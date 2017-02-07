@@ -38,20 +38,27 @@ function removeLastFileFromDir(dir: string) {
 
 
         const files = readdirSync(dir);
-        files.sort(function (a, b) {
-            return statSync(dir + "/" + a).mtime.getTime() -
-                statSync(dir + "/" + b).mtime.getTime();
-        });
+
+        if (files.length > 1) {
+
+            files.sort(function (a, b) {
+                return statSync(dir + "/" + a).mtime.getTime() -
+                    statSync(dir + "/" + b).mtime.getTime();
+            });
 
 
-        exec("rm " + files[0], (err, stdout, stderr) => {
-            if (err) {
-                reject(err)
-            } else {
-                resolve(true)
-            }
+            exec("rm " + files[0], (err, stdout, stderr) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve(true)
+                }
 
-        })
+            })
+
+        } else {
+            reject("nothing to remove!")
+        }
 
     })
 
