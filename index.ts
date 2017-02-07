@@ -84,7 +84,7 @@ function remfiles(dir: string) {
             getPercentSpace(dir).then((percent) => {
 
 
-                if (percent > 10) {
+                if (percent > 85) {
 
                     removeLastFileFromDir(dir).then(() => {
 
@@ -135,7 +135,7 @@ export function checkSpaceInDir(dir: string, options?: { extension?: string, ver
             getPercentSpace(dir).then((percent) => {
 
 
-                if (percent > 10) {
+                if (percent > 85) {
 
                     remfiles(dir).then((a) => {
 

@@ -1,6 +1,6 @@
 {
   "name": "checkspaceforfiles",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Check for space on disk and remove files in folder if disk is full loaded",
   "main": "index.js",
   "scripts": {
