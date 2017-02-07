@@ -37,9 +37,25 @@ function removeLastFileFromDir(dir: string) {
     return new Promise((resolve, reject) => {
 
 
-        const files = readdirSync(dir);
+        const fis = readdirSync(dir)
+
+        const files = []
+
+
+        for (let i = 0; i < fis.length; i++) {
+
+            if (!statSync(dir + "/" + fis[i]).isDirectory()) {
+                files.push(fis[i])
+            }
+
+        }
+
 
         if (files.length > 1) {
+
+
+
+
 
             files.sort(function (a, b) {
                 return statSync(dir + "/" + a).mtime.getTime() -
@@ -124,9 +140,6 @@ export function checkSpaceInDir(dir: string, options?: { extension?: string, ver
 
                 if (percent > 90) {
 
-
-
-
                     remfiles(dir).then((a) => {
 
                         if (options && options.verbose) console.log("space cleaned")
@@ -134,12 +147,8 @@ export function checkSpaceInDir(dir: string, options?: { extension?: string, ver
 
                     }).catch((err) => {
                         if (options && options.verbose) console.error(err)
-
-
                         reject(err)
                     })
-
-
 
                 } else {
                     if (options && options.verbose) console.log("disk checked")
@@ -150,9 +159,6 @@ export function checkSpaceInDir(dir: string, options?: { extension?: string, ver
             }).catch((err) => {
                 reject(err)
             })
-
-
-
 
         }
 
