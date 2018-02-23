@@ -20,6 +20,7 @@ function getPercentSpace(dir) {
         });
     });
 }
+exports.getPercentSpace = getPercentSpace;
 function removeLastFileFromDir(dir) {
     return new Promise((resolve, reject) => {
         const fis = fs_1.readdirSync(dir);
@@ -48,6 +49,7 @@ function removeLastFileFromDir(dir) {
         }
     });
 }
+exports.removeLastFileFromDir = removeLastFileFromDir;
 function remfilesOnDir(dir) {
     return new Promise((resolve, reject) => {
         function recursiveremfiles(dir) {
@@ -69,6 +71,7 @@ function remfilesOnDir(dir) {
         recursiveremfiles(dir);
     });
 }
+exports.remfilesOnDir = remfilesOnDir;
 function checkSpaceInDir(dir, options) {
     return new Promise((resolve, reject) => {
         if (!dir) {

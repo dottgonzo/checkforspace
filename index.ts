@@ -4,7 +4,7 @@ import * as Promise from "bluebird"
 import { exec } from "child_process"
 import { readdirSync, statSync } from "fs"
 
-function getPercentSpace(dir: string) {
+export function getPercentSpace(dir: string) {
   return new Promise((resolve, reject) => {
 
     exec("df -h " + dir + " | grep '/'", (err, stdout, stderr) => {
@@ -28,7 +28,7 @@ function getPercentSpace(dir: string) {
 
 
 
-function removeLastFileFromDir(dir: string) {
+export function removeLastFileFromDir(dir: string) {
   return new Promise((resolve, reject) => {
 
 
@@ -71,7 +71,7 @@ function removeLastFileFromDir(dir: string) {
 
 }
 
-function remfilesOnDir(dir: string) {
+export function remfilesOnDir(dir: string) {
   return new Promise((resolve, reject) => {
 
     function recursiveremfiles(dir: string) {
