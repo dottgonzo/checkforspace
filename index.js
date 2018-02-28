@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Promise = require("bluebird");
 const child_process_1 = require("child_process");
 const fs_1 = require("fs");
+const checkFolderSize = require("checkfoldersize");
 function getPercentSpace(dir) {
     return new Promise((resolve, reject) => {
         child_process_1.exec("df -h " + dir + " | grep '/'", (err, stdout, stderr) => {
@@ -21,6 +22,16 @@ function getPercentSpace(dir) {
     });
 }
 exports.getPercentSpace = getPercentSpace;
+function getFreeGigaSpace(dir) {
+    return new Promise((resolve, reject) => {
+        checkFolderSize.getSizeInfo(dir).then((diskInfo) => {
+            resolve(((diskInfo.available / 1024) / 1024) / 1024);
+        }).catch((err) => {
+            reject(err);
+        });
+    });
+}
+exports.getFreeGigaSpace = getFreeGigaSpace;
 function removeLastFileFromDir(dir) {
     return new Promise((resolve, reject) => {
         const fis = fs_1.readdirSync(dir);
@@ -50,23 +61,43 @@ function removeLastFileFromDir(dir) {
     });
 }
 exports.removeLastFileFromDir = removeLastFileFromDir;
-function remfilesOnDir(dir) {
+function remfilesOnDir(dir, options) {
     return new Promise((resolve, reject) => {
+        if (!options)
+            options = {};
         function recursiveremfiles(dir) {
-            getPercentSpace(dir).then((percent) => {
-                if (percent > 85) {
-                    removeLastFileFromDir(dir).then(() => {
-                        recursiveremfiles(dir);
-                    }).catch((err) => {
-                        reject(err);
-                    });
-                }
-                else {
-                    resolve(true);
-                }
-            }).catch((err) => {
-                reject(err);
-            });
+            if (options.freeGigaSpace) {
+                getFreeGigaSpace(dir).then((freeGiga) => {
+                    if (options.freeGigaSpace > freeGiga) {
+                        removeLastFileFromDir(dir).then(() => {
+                            recursiveremfiles(dir);
+                        }).catch((err) => {
+                            reject(err);
+                        });
+                    }
+                    else {
+                        resolve(true);
+                    }
+                }).catch((err) => {
+                    reject(err);
+                });
+            }
+            else {
+                getPercentSpace(dir).then((percent) => {
+                    if (percent > 85) {
+                        removeLastFileFromDir(dir).then(() => {
+                            recursiveremfiles(dir);
+                        }).catch((err) => {
+                            reject(err);
+                        });
+                    }
+                    else {
+                        resolve(true);
+                    }
+                }).catch((err) => {
+                    reject(err);
+                });
+            }
         }
         recursiveremfiles(dir);
     });
@@ -74,34 +105,60 @@ function remfilesOnDir(dir) {
 exports.remfilesOnDir = remfilesOnDir;
 function checkSpaceInDir(dir, options) {
     return new Promise((resolve, reject) => {
+        if (!options)
+            options = {};
         if (!dir) {
-            if (options && options.verbose)
+            if (options.verbose)
                 console.error("No dir provided");
             reject("No dir provided");
         }
         else {
-            if (options && options.verbose)
+            if (options.verbose)
                 console.log("checking disk");
-            getPercentSpace(dir).then((percent) => {
-                if (percent > 85) {
-                    remfilesOnDir(dir).then((a) => {
-                        if (options && options.verbose)
-                            console.log("space cleaned");
-                        resolve(a);
-                    }).catch((err) => {
-                        if (options && options.verbose)
-                            console.error(err);
-                        reject(err);
-                    });
-                }
-                else {
-                    if (options && options.verbose)
-                        console.log("disk checked");
-                    resolve("disk ok, nothing to do");
-                }
-            }).catch((err) => {
-                reject(err);
-            });
+            if (options.freeGigaSpace) {
+                getFreeGigaSpace(dir).then((freeGiga) => {
+                    if (options.freeGigaSpace > freeGiga) {
+                        remfilesOnDir(dir).then((a) => {
+                            if (options.verbose)
+                                console.log("space cleaned");
+                            resolve(a);
+                        }).catch((err) => {
+                            if (options.verbose)
+                                console.error(err);
+                            reject(err);
+                        });
+                    }
+                    else {
+                        if (options.verbose)
+                            console.log("disk checked");
+                        resolve("disk ok, nothing to do");
+                    }
+                }).catch((err) => {
+                    reject(err);
+                });
+            }
+            else {
+                getPercentSpace(dir).then((percent) => {
+                    if (percent > 85) {
+                        remfilesOnDir(dir).then((a) => {
+                            if (options.verbose)
+                                console.log("space cleaned");
+                            resolve(a);
+                        }).catch((err) => {
+                            if (options.verbose)
+                                console.error(err);
+                            reject(err);
+                        });
+                    }
+                    else {
+                        if (options.verbose)
+                            console.log("disk checked");
+                        resolve("disk ok, nothing to do");
+                    }
+                }).catch((err) => {
+                    reject(err);
+                });
+            }
         }
     });
 }

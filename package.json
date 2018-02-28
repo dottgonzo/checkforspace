@@ -1,6 +1,6 @@
 {
   "name": "checkspaceforfiles",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Check for space on disk and remove files in folder if disk is full loaded",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,8 @@
   },
   "homepage": "https://github.com/dottgonzo/checkforspace#readme",
   "dependencies": {
-    "bluebird": "^3.5.1"
+    "bluebird": "^3.5.1",
+    "checkfoldersize": "0.0.2"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.20",
